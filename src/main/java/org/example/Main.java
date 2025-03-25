@@ -143,9 +143,9 @@ public class Main {
         for (int i = 0; i < secretNumber.length; i++) {
             secretNumber[i] = random.nextInt(1, difficulty);
         }
-        for (int j : secretNumber) {
-            System.out.println(j);
-        }
+        //for (int j : secretNumber) {
+        //    System.out.println(j);
+        //}
 
         int guessedNumber;
         int pointsGuesses = 0;
