@@ -32,23 +32,24 @@ public class Main {
         }
 
         public void showMatchInf() {
-            String difficultyInFull = "";
-            if (matchDifficulty == 1) {
-                difficultyInFull = "Fácil";
-            } else if (matchDifficulty == 2) {
-                difficultyInFull = "Médio";
-            } else if (matchDifficulty == 3) {
-                difficultyInFull = "Difícil";
-            } else if (matchDifficulty == 4) {
-                difficultyInFull = "Demi God";
-            }
+            String difficultyInFull = switch (matchDifficulty) {
+                case 1 -> "Fácil";
+                case 2 -> "Médio";
+                case 3 -> "Difícil";
+                default -> "Demi God";
+            };
+
             System.out.println("Pontos: " + matchPoints + " / Dificuldade: " + difficultyInFull);
         }
     }
 
     public static void main(String[] args) {
+        menu();
+    }
 
-        while (true) {
+    public static void menu() {
+        boolean continueVar = true;
+        while (continueVar) {
             int option;
             System.out.println("-------Menu-------");
             System.out.println("1. Iniciar Novo Jogo");
@@ -62,50 +63,49 @@ public class Main {
             if (scanner.hasNextInt()) {
                 option = Integer.parseInt(scanner.nextLine());
 
-                if (option == 1) {
-                    while (true) {
-                        int difficulty;
-                        System.out.println("\nEscolha seu nível de dificuldade entre:");
-                        System.out.println("1. Fácil");
-                        System.out.println("2. Médio");
-                        System.out.println("3. Difícil");
-                        System.out.println("4. (Modo Secreto) DemiGod");
-                        System.out.println("0. Voltar");
-
-                        System.out.print("Digite sua Opção: ");
-                        if (scanner.hasNextInt()) {
-                            difficulty = Integer.parseInt(scanner.nextLine());
-
-                            if (difficulty == 0) {
-                                System.out.print("\n");
-                                break;
-                            } else if (difficulty > 0 && difficulty <= 4) {
-                                playNewGame(difficulty);
-                                break;
-                            } else {
-                                System.out.println("\nDigite uma opção válida!!");
-                            }
-                        } else {
-                            System.out.println("\nDigite uma Entrada Válida!!");
-                            scanner.next();
-                        }
+                switch (option) {
+                    case 1 -> difficultyMenu();
+                    case 2 -> rules();
+                    case 3 -> resultList();
+                    case 4 -> bestMatches();
+                    case 5 -> gameOptions();
+                    case 0 -> {
+                        continueVar = false;
+                        System.out.println("\nObrigado por Jogar!!");
                     }
-                } else if (option == 2) {
-                    rules();
-                } else if (option == 3) {
-                    resultList();
-                } else if (option == 4) {
-                    bestMatches();
-                } else if (option == 5) {
-                    gameOptions();
-                } else if (option == 0) {
-                    System.out.println("\nObrigado por Jogar!!");
-                    break;
-                } else {
-                    System.out.println("\nDigite uma opção válida!!\n");
+                    default -> System.out.println("\nDigite uma opção válida!!\n");
                 }
             } else {
                 System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+    }
+
+    public static void difficultyMenu() {
+        while (true) {
+            int difficulty;
+            System.out.println("\nEscolha seu nível de dificuldade entre:");
+            System.out.println("1. Fácil");
+            System.out.println("2. Médio");
+            System.out.println("3. Difícil");
+            System.out.println("4. (Modo Secreto) DemiGod");
+            System.out.println("0. Voltar");
+
+            System.out.print("Digite sua Opção: ");
+            if (scanner.hasNextInt()) {
+                difficulty = Integer.parseInt(scanner.nextLine());
+                if (difficulty == 0) {
+                    System.out.print("\n");
+                    break;
+                } else if (difficulty > 0 && difficulty <= 4) {
+                    playNewGame(difficulty);
+                    break;
+                } else {
+                    System.out.println("\nDigite uma opção válida!!");
+                }
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!");
                 scanner.next();
             }
         }
@@ -121,22 +121,27 @@ public class Main {
         int guess = 0;
         int points = 0;
 
-        if (dif == 1) {
-            difficulty = difEasy[0];
-            guess = difEasy[1];
-            points = difEasy[2];
-        } else if (dif == 2) {
-            difficulty = difMedium[0];
-            guess = difMedium[1];
-            points = difMedium[2];
-        } else if (dif == 3) {
-            difficulty = difHard[0];
-            guess = difHard[1];
-            points = difHard[2];
-        } else if (dif == 4) {
-            difficulty = difDemiGod[0];
-            guess = difDemiGod[1];
-            points = difDemiGod[2];
+        switch (dif) {
+            case 1 -> {
+                difficulty = difEasy[0];
+                guess = difEasy[1];
+                points = difEasy[2];
+            }
+            case 2 -> {
+                difficulty = difMedium[0];
+                guess = difMedium[1];
+                points = difMedium[2];
+            }
+            case 3 -> {
+                difficulty = difHard[0];
+                guess = difHard[1];
+                points = difHard[2];
+            }
+            case 4 -> {
+                difficulty = difDemiGod[0];
+                guess = difDemiGod[1];
+                points = difDemiGod[2];
+            }
         }
 
         int[] secretNumber = new int[3];
@@ -162,7 +167,6 @@ public class Main {
                 System.out.print("Digite um número de um 1 à " + difficulty + ": ");
                 if (scanner.hasNextInt()) {
                     guessedNumber = Integer.parseInt(scanner.nextLine());
-
                     if (guessedNumber == secretNumber[0]) {
                         System.out.println("\nVocê Acertou!!");
                         result = true;
@@ -186,7 +190,6 @@ public class Main {
                 System.out.print("Digite um número de um 1 à " + difficulty + ": ");
                 if (scanner.hasNextInt()) {
                     guessedNumber = Integer.parseInt(scanner.nextLine());
-
                     if (guessedNumber == secretNumber[0]) {
                         System.out.println("\nVocê Acertou!!");
                         break;
@@ -200,6 +203,7 @@ public class Main {
                     scanner.next();
                 }
             }
+
             for (secondIndice = firstIndice + 1; secondIndice < guess; secondIndice++) {
                 System.out.println((secondIndice + 1) + "/" + guess + " tentativas");
                 System.out.print("Digite um número de um 1 à " + difficulty + ": ");
@@ -219,6 +223,7 @@ public class Main {
                     scanner.next();
                 }
             }
+
             for (thirdIndice = secondIndice + 1; thirdIndice < guess; thirdIndice++) {
                 System.out.println((thirdIndice + 1) + "/" + guess + " tentativas");
                 System.out.print("Digite um número de um 1 à " + difficulty + ": ");
@@ -250,22 +255,9 @@ public class Main {
             System.out.println("\nVocê Não Acertou...");
         }
 
-        if (matchList.size() < 10) {
-            matchList.add(new MatchResultObj(matchPoints, dif));
-        } else {
-            matchList.remove(0);
-            matchList.add(new MatchResultObj(matchPoints, dif));
-        }
+        addingMatchToMatchList(matchPoints, dif);
 
-        if (dif == 1 && bestResults[0] < matchPoints) {
-            bestResults[0] = matchPoints;
-        } else if (dif == 2 && bestResults[1] < matchPoints) {
-            bestResults[1] = matchPoints;
-        } else if (dif == 3 && bestResults[2] < matchPoints) {
-            bestResults[2] = matchPoints;
-        } else if (dif == 4 && bestResults[3] < matchPoints) {
-            bestResults[3] = matchPoints;
-        }
+        addingBestMatchResults(matchPoints, dif);
 
         if (dif != 4) {
             System.out.println("Número Secreto: " + secretNumber[0]);
@@ -275,6 +267,27 @@ public class Main {
                 System.out.println((i + 1) + "º Número Secreto: " + secretNumber[i]);
             }
             System.out.print("\n");
+        }
+    }
+
+    public static void addingMatchToMatchList(int matchPoints, int dif) {
+        if (matchList.size() < 10) {
+            matchList.add(new MatchResultObj(matchPoints, dif));
+        } else {
+            matchList.remove(0);
+            matchList.add(new MatchResultObj(matchPoints, dif));
+        }
+    }
+
+    public static void addingBestMatchResults(int matchPoints, int dif) {
+        if (dif == 1 && bestResults[0] < matchPoints) {
+            bestResults[0] = matchPoints;
+        } else if (dif == 2 && bestResults[1] < matchPoints) {
+            bestResults[1] = matchPoints;
+        } else if (dif == 3 && bestResults[2] < matchPoints) {
+            bestResults[2] = matchPoints;
+        } else if (dif == 4 && bestResults[3] < matchPoints) {
+            bestResults[3] = matchPoints;
         }
     }
 
@@ -340,7 +353,8 @@ public class Main {
 
     public static int tipSystem(int secretNumber, int difficulty, int guessedNumber) {
         int pointsUsed = 0;
-        while(true) {
+        boolean continueVar = true;
+        while(continueVar) {
             System.out.println("\n------------Dicas------------");
             System.out.println("1. Pariedade (Par/Ímpar) / -10 pontos");
             System.out.println("2. Intervalo (Metade Inferior/Superior) / -20 pontos");
@@ -350,31 +364,33 @@ public class Main {
             if (scanner.hasNextInt()) {
                 int tipOptions = Integer.parseInt(scanner.nextLine());
 
-                if (tipOptions == 1) {
-                    pointsUsed += 10;
-                    if (secretNumber % 2 == 0) {
-                        System.out.println("\nO número é Par!");
-                    } else {
-                        System.out.println("\nO número é Ímpar!");
+                switch (tipOptions) {
+                    case 1 -> {
+                        pointsUsed += 10;
+                        if (secretNumber % 2 == 0) {
+                            System.out.println("\nO número é Par!");
+                        } else {
+                            System.out.println("\nO número é Ímpar!");
+                        }
                     }
-                } else if (tipOptions == 2) {
-                    pointsUsed += 20;
-                    if (secretNumber > (difficulty/2)) {
-                        System.out.println("\nO número está na metade Superior!");
-                    } else {
-                        System.out.println("\nO número está na metade Inferior!");
+                    case 2 -> {
+                        pointsUsed += 20;
+                        if (secretNumber > (difficulty/2)) {
+                            System.out.println("\nO número está na metade Superior!");
+                        } else {
+                            System.out.println("\nO número está na metade Inferior!");
+                        }
                     }
-                } else if (tipOptions == 3) {
-                    pointsUsed += 15;
-                    if (Math.abs(secretNumber - guessedNumber) <= 10) {
-                        System.out.println("\nEstá quente!");
-                    } else {
-                        System.out.println("\nEstá frio...");
+                    case 3 -> {
+                        pointsUsed += 15;
+                        if (Math.abs(secretNumber - guessedNumber) <= 10) {
+                            System.out.println("\nEstá quente!");
+                        } else {
+                            System.out.println("\nEstá frio...");
+                        }
                     }
-                } else if (tipOptions == 0) {
-                    break;
-                } else {
-                    System.out.println("Escolha uma opção válida!!");
+                    case 0 -> continueVar = false;
+                    default -> System.out.println("Escolha uma opção válida!!");
                 }
             } else {
                 System.out.println("\nDigite uma Entrada Válida!!\n");
