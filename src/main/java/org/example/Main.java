@@ -113,7 +113,6 @@ public class Main {
 
     public static void playNewGame(int dif) {
         Random random = new Random();
-        Scanner scanner = new Scanner(System.in);
 
         pointsUsedOnTips = 0;
 
@@ -123,102 +122,29 @@ public class Main {
         for (int i = 0; i < secretNumber.length; i++) {
             secretNumber[i] = random.nextInt(1, data.getDifficulty());
         }
-        //for (int j : secretNumber) {
-        //    System.out.println(j);
-        //}
+        for (int j : secretNumber) {
+            System.out.println(j);
+        }
 
-        int guessedNumber;
         int pointsGuesses = 0;
         boolean result = false;
-
-        int firstIndice;
-        int secondIndice;
         int thirdIndice = 0;
 
         if (dif != 4) {
             System.out.println("\nSeja Bem Vindo(a) ao jogo de Adivinhação!!!");
-            for (int i = 0; i < data.getGuess(); i++) {
-                System.out.println((i + 1) + "/" + data.getGuess() + " tentativas");
-                System.out.print("Digite um número de um 1 à " + data.getDifficulty() + ": ");
-                if (scanner.hasNextInt()) {
-                    guessedNumber = Integer.parseInt(scanner.nextLine());
-                    if (guessedNumber == secretNumber[0]) {
-                        System.out.println("\nVocê Acertou!!");
-                        result = true;
-                        break;
-                    } else {
-                        System.out.println("Tente Novamente\n");
-                        tipsMenu(guessedNumber, secretNumber[0], data.getDifficulty());
-                    }
-                    pointsGuesses++;
-                } else {
-                    System.out.println("\nDigite uma Entrada Válida!!\n");
-                    scanner.next();
-                }
-            }
+
+            MatchResult match = returnMatchResultGameDif1to3(data.getGuess(), data.getDifficulty(), secretNumber[0], pointsGuesses, result);
+
+            result = match.getResult();
+            pointsGuesses = match.getPointsGuesses();
         } else {
             System.out.println("\n5eja Bem V1nd0(a) a0 jog0 de Ad1v1nhaçã0... :(");
             System.out.println("Boa Sorte, você definitivamente vai precisar...");
 
-            for (firstIndice = 0; firstIndice < data.getGuess(); firstIndice++) {
-                System.out.println((firstIndice + 1) + "/" + data.getGuess() + " tentativas");
-                System.out.print("Digite um número de um 1 à " + data.getDifficulty() + ": ");
-                if (scanner.hasNextInt()) {
-                    guessedNumber = Integer.parseInt(scanner.nextLine());
-                    if (guessedNumber == secretNumber[0]) {
-                        System.out.println("\nVocê Acertou!!");
-                        break;
-                    } else {
-                        System.out.println("Tente Novamente\n");
-                        tipsMenu(guessedNumber, secretNumber[0], data.getDifficulty());
-                    }
-                    pointsGuesses++;
-                } else {
-                    System.out.println("\nDigite uma Entrada Válida!!\n");
-                    scanner.next();
-                }
-            }
+            MatchResult match = returnMatchResultGameDif4(data.getGuess(), data.getDifficulty(), secretNumber, pointsGuesses, result);
 
-            for (secondIndice = firstIndice + 1; secondIndice < data.getGuess(); secondIndice++) {
-                System.out.println((secondIndice + 1) + "/" + data.getGuess() + " tentativas");
-                System.out.print("Digite um número de um 1 à " + data.getDifficulty() + ": ");
-                if (scanner.hasNextInt()) {
-                    guessedNumber = Integer.parseInt(scanner.nextLine());
-
-                    if (guessedNumber == secretNumber[1]) {
-                        System.out.println("\nVocê Acertou!!");
-                        break;
-                    } else {
-                        System.out.println("Tente Novamente\n");
-                        tipsMenu(guessedNumber, secretNumber[1], data.getDifficulty());
-                    }
-                    pointsGuesses++;
-                } else {
-                    System.out.println("\nDigite uma Entrada Válida!!\n");
-                    scanner.next();
-                }
-            }
-
-            for (thirdIndice = secondIndice + 1; thirdIndice < data.getGuess(); thirdIndice++) {
-                System.out.println((thirdIndice + 1) + "/" + data.getGuess() + " tentativas");
-                System.out.print("Digite um número de um 1 à " + data.getDifficulty() + ": ");
-                if (scanner.hasNextInt()) {
-                    guessedNumber = Integer.parseInt(scanner.nextLine());
-
-                    if (guessedNumber == secretNumber[2]) {
-                        System.out.println("\nVocê Acertou!!");
-                        result = true;
-                        break;
-                    } else {
-                        System.out.println("Tente Novamente\n");
-                        tipsMenu(guessedNumber, secretNumber[2], data.getDifficulty());
-                    }
-                    pointsGuesses++;
-                } else {
-                    System.out.println("\nDigite uma Entrada Válida!!\n");
-                    scanner.next();
-                }
-            }
+            result = match.getResult();
+            pointsGuesses = match.getPointsGuesses();
         }
 
         int matchPoints;
@@ -298,6 +224,116 @@ public class Main {
         }
 
         return new DifficultyData(difficulty, guess, points);
+    }
+
+    public static class MatchResult {
+        boolean result;
+        int pointsGuesses;
+
+        public MatchResult(boolean result, int pointsGuesses) {
+            this.result = result;
+            this.pointsGuesses = pointsGuesses;
+        }
+
+        public boolean getResult() {
+            return result;
+        }
+
+        public int getPointsGuesses() {
+            return pointsGuesses;
+        }
+    }
+
+    public static MatchResult returnMatchResultGameDif1to3(int guess, int difficulty, int secretNumber, int pointsGuesses, boolean result) {
+        for (int i = 0; i < guess; i++) {
+            System.out.println((i + 1) + "/" + guess + " tentativas");
+            System.out.print("Digite um número de um 1 à " + difficulty + ": ");
+            if (scanner.hasNextInt()) {
+                int guessedNumber = Integer.parseInt(scanner.nextLine());
+                if (guessedNumber == secretNumber) {
+                    System.out.println("\nVocê Acertou!!");
+                    result = true;
+                    break;
+                } else {
+                    System.out.println("Tente Novamente\n");
+                    tipsMenu(guessedNumber, secretNumber, difficulty);
+                }
+                pointsGuesses++;
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+
+        return new MatchResult(result, pointsGuesses);
+    }
+
+    public static MatchResult returnMatchResultGameDif4(int guess, int difficulty, int[] secretNumber, int pointsGuesses, boolean result) {
+        int firstIndice;
+        int secondIndice;
+        int thirdIndice;
+
+        for (firstIndice = 0; firstIndice < guess; firstIndice++) {
+            System.out.println((firstIndice + 1) + "/" + guess + " tentativas");
+            System.out.print("Digite um número de um 1 à " + difficulty + ": ");
+            if (scanner.hasNextInt()) {
+                int guessedNumber = Integer.parseInt(scanner.nextLine());
+                if (guessedNumber == secretNumber[0]) {
+                    System.out.println("\nVocê Acertou!!");
+                    break;
+                } else {
+                    System.out.println("Tente Novamente\n");
+                    tipsMenu(guessedNumber, secretNumber[0], difficulty);
+                }
+                pointsGuesses++;
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+
+        for (secondIndice = firstIndice + 1; secondIndice < guess; secondIndice++) {
+            System.out.println((secondIndice + 1) + "/" + guess + " tentativas");
+            System.out.print("Digite um número de um 1 à " + difficulty + ": ");
+            if (scanner.hasNextInt()) {
+                int guessedNumber = Integer.parseInt(scanner.nextLine());
+
+                if (guessedNumber == secretNumber[1]) {
+                    System.out.println("\nVocê Acertou!!");
+                    break;
+                } else {
+                    System.out.println("Tente Novamente\n");
+                    tipsMenu(guessedNumber, secretNumber[1], difficulty);
+                }
+                pointsGuesses++;
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+
+        for (thirdIndice = secondIndice + 1; thirdIndice < guess; thirdIndice++) {
+            System.out.println((thirdIndice + 1) + "/" + guess + " tentativas");
+            System.out.print("Digite um número de um 1 à " + difficulty + ": ");
+            if (scanner.hasNextInt()) {
+                int guessedNumber = Integer.parseInt(scanner.nextLine());
+
+                if (guessedNumber == secretNumber[2]) {
+                    System.out.println("\nVocê Acertou!!");
+                    result = true;
+                    break;
+                } else {
+                    System.out.println("Tente Novamente\n");
+                    tipsMenu(guessedNumber, secretNumber[2], difficulty);
+                }
+                pointsGuesses++;
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+
+        return new MatchResult(result, pointsGuesses);
     }
 
     public static void addingMatchToMatchList(int matchPoints, int dif) {
