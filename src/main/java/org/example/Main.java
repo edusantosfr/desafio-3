@@ -1,126 +1,481 @@
 package org.example;
 
-import org.example.subClasses.Arqueiro;
-import org.example.subClasses.Guerreiro;
-import org.example.subClasses.Mago;
-
-import java.util.InputMismatchException;
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
     public static Scanner scanner = new Scanner(System.in);
 
+    public static String gameOptionTips = "s";
+
+    public static int[] difEasy = {50, 10, 100};
+    public static int[] difMedium = {100, 7, 200};
+    public static int[] difHard = {200, 5, 300};
+    public static int[] difDemiGod = {200, 11, 500};
+
+    public static int totalPoints = 0;
+
+    public static int pointsUsedOnTips = 0;
+
+    public static int[] bestResults = new int[4];
+
+    static ArrayList<MatchResultObj> matchList = new ArrayList<>();
+
+    static class MatchResultObj {
+        int matchPoints;
+        int matchDifficulty;
+
+        public MatchResultObj(int matchPoints, int matchDifficulty) {
+            this.matchPoints = matchPoints;
+            this.matchDifficulty = matchDifficulty;
+        }
+
+        public void showMatchInf() {
+            String difficultyInFull = switch (matchDifficulty) {
+                case 1 -> "Fácil";
+                case 2 -> "Médio";
+                case 3 -> "Difícil";
+                default -> "Demi God";
+            };
+
+            System.out.println("Pontos: " + matchPoints + " / Dificuldade: " + difficultyInFull);
+        }
+    }
+
     public static void main(String[] args) {
-        menuInicial();
+        menu();
     }
 
-    public static void menuInicial() {
-        System.out.println("Olá, bem vindo ao mundo de Elarion caro Jogador!!\n");
-        boolean isJogando = true;
+    public static void menu() {
+        boolean continueVar = true;
+        while (continueVar) {
+            int option;
+            System.out.println("-------Menu-------");
+            System.out.println("1. Iniciar Novo Jogo");
+            System.out.println("2. Ver Regras");
+            System.out.println("3. Ver Histórico de Pontuação");
+            System.out.println("4. Ver Melhores Pontuações");
+            System.out.println("5. Opções de Jogo");
+            System.out.println("0. Sair");
 
-        while (isJogando) {
-            try {
-                System.out.println("----Menu de Opções----");
-                System.out.println("1. Iniciar um Novo Jogo");
-                System.out.println("2. Ler Regras de Jogo");
-                System.out.println("0. Fechar do Jogo");
-                System.out.print("Digite a sua Opção: ");
-                int option = scanner.nextInt();
+            System.out.print("Digite sua Opção: ");
+            if (scanner.hasNextInt()) {
+                option = Integer.parseInt(scanner.nextLine());
 
                 switch (option) {
-                    case 1 -> iniciarNovoJogo();
-                    case 2 -> regrasDeJogo();
-                    case 0 -> isJogando = false;
-                    default -> System.out.println("\nDigite uma Opção Válida.\n");
+                    case 1 -> difficultyMenu();
+                    case 2 -> rules();
+                    case 3 -> resultList();
+                    case 4 -> bestMatches();
+                    case 5 -> gameOptions();
+                    case 0 -> {
+                        continueVar = false;
+                        System.out.println("\nObrigado por Jogar!!");
+                    }
+                    default -> System.out.println("\nDigite uma opção válida!!\n");
                 }
-
-            } catch (InputMismatchException e) {
-                System.out.println("\nEntrada Inválida, Tente novamente.\n");
-                scanner.nextLine();
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
             }
         }
     }
 
-    public static void iniciarNovoJogo() {
-        int classe = escolhaDeClasse();
-        System.out.print("\nDigite aqui o nome do seu personagem: ");
-        String nomeDoPersonagem = scanner.nextLine();
+    public static void difficultyMenu() {
+        while (true) {
+            int difficulty;
+            System.out.println("\nEscolha seu nível de dificuldade entre:");
+            System.out.println("1. Fácil");
+            System.out.println("2. Médio");
+            System.out.println("3. Difícil");
+            System.out.println("4. (Modo Secreto) DemiGod");
+            System.out.println("0. Voltar");
 
-        switch (classe) {
+            System.out.print("Digite sua Opção: ");
+            if (scanner.hasNextInt()) {
+                difficulty = Integer.parseInt(scanner.nextLine());
+                if (difficulty == 0) {
+                    System.out.print("\n");
+                    break;
+                } else if (difficulty > 0 && difficulty <= 4) {
+                    playNewGame(difficulty);
+                    break;
+                } else {
+                    System.out.println("\nDigite uma opção válida!!");
+                }
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!");
+                scanner.next();
+            }
+        }
+    }
+
+    public static void playNewGame(int dif) {
+        Random random = new Random();
+
+        pointsUsedOnTips = 0;
+
+        DifficultyData data = returnDifficultyData(dif);
+
+        int[] secretNumber = new int[3];
+        for (int i = 0; i < secretNumber.length; i++) {
+            secretNumber[i] = random.nextInt(1, data.getDifficulty());
+        }
+        //for (int j : secretNumber) {
+        //    System.out.println(j);
+        //}
+
+        int pointsGuesses = 0;
+        boolean result = false;
+        int thirdIndice = 0;
+
+        if (dif != 4) {
+            System.out.println("\nSeja Bem Vindo(a) ao jogo de Adivinhação!!!");
+
+            MatchResult match = returnMatchResultGameDif1to3(data.getGuess(), data.getDifficulty(), secretNumber[0], pointsGuesses, result);
+
+            result = match.getResult();
+            pointsGuesses = match.getPointsGuesses();
+        } else {
+            System.out.println("\n5eja Bem V1nd0(a) a0 jog0 de Ad1v1nhaçã0... :(");
+            System.out.println("Boa Sorte, você definitivamente vai precisar...");
+
+            MatchResult match = returnMatchResultGameDif4(data.getGuess(), data.getDifficulty(), secretNumber, pointsGuesses, result);
+
+            result = match.getResult();
+            pointsGuesses = match.getPointsGuesses();
+        }
+
+        int matchPoints;
+        if (result) {
+            matchPoints = data.getPoints() + ((data.getGuess() - thirdIndice - 1) * 50) - (pointsGuesses * 10) - pointsUsedOnTips;
+            totalPoints += matchPoints;
+        } else {
+            matchPoints = 0;
+            System.out.println("\nVocê Não Acertou...");
+        }
+
+        addingMatchToMatchList(matchPoints, dif);
+
+        addingBestMatchResults(matchPoints, dif);
+
+        if (dif != 4) {
+            System.out.println("Número Secreto: " + secretNumber[0]);
+            System.out.print("\n");
+        } else {
+            for (int i = 0; i < secretNumber.length; i++) {
+                System.out.println((i + 1) + "º Número Secreto: " + secretNumber[i]);
+            }
+            System.out.print("\n");
+        }
+    }
+
+    public static class DifficultyData {
+        private final int DIFFICULTY;
+        private final int GUESS;
+        private final int POINTS;
+
+        public DifficultyData(int difficulty, int guess, int points) {
+            this.DIFFICULTY = difficulty;
+            this.GUESS = guess;
+            this.POINTS = points;
+        }
+
+        public int getDifficulty() {
+            return DIFFICULTY;
+        }
+
+        public int getGuess() {
+            return GUESS;
+        }
+
+        public int getPoints() {
+            return POINTS;
+        }
+    }
+
+    public static DifficultyData returnDifficultyData(int dif) {
+        int difficulty = 0;
+        int guess = 0;
+        int points = 0;
+
+        switch (dif) {
             case 1 -> {
-                Personagem personagem = new Guerreiro(nomeDoPersonagem);
-            } case 2 -> {
-                Personagem personagem = new Arqueiro(nomeDoPersonagem);
-            } case 3 -> {
-                Personagem personagem = new Mago(nomeDoPersonagem);
+                difficulty = difEasy[0];
+                guess = difEasy[1];
+                points = difEasy[2];
+            }
+            case 2 -> {
+                difficulty = difMedium[0];
+                guess = difMedium[1];
+                points = difMedium[2];
+            }
+            case 3 -> {
+                difficulty = difHard[0];
+                guess = difHard[1];
+                points = difHard[2];
+            }
+            case 4 -> {
+                difficulty = difDemiGod[0];
+                guess = difDemiGod[1];
+                points = difDemiGod[2];
+            }
+        }
+
+        return new DifficultyData(difficulty, guess, points);
+    }
+
+    public static class MatchResult {
+        boolean result;
+        int pointsGuesses;
+
+        public MatchResult(boolean result, int pointsGuesses) {
+            this.result = result;
+            this.pointsGuesses = pointsGuesses;
+        }
+
+        public boolean getResult() {
+            return result;
+        }
+
+        public int getPointsGuesses() {
+            return pointsGuesses;
+        }
+    }
+
+    public static MatchResult returnMatchResultGameDif1to3(int guess, int difficulty, int secretNumber, int pointsGuesses, boolean result) {
+        for (int i = 0; i < guess; i++) {
+            System.out.println((i + 1) + "/" + guess + " tentativas");
+            System.out.print("Digite um número de um 1 à " + difficulty + ": ");
+            if (scanner.hasNextInt()) {
+                int guessedNumber = Integer.parseInt(scanner.nextLine());
+                if (guessedNumber == secretNumber) {
+                    System.out.println("\nVocê Acertou!!");
+                    result = true;
+                    break;
+                } else {
+                    System.out.println("Tente Novamente\n");
+                    tipsMenu(guessedNumber, secretNumber, difficulty);
+                }
+                pointsGuesses++;
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+
+        return new MatchResult(result, pointsGuesses);
+    }
+
+    public static MatchResult returnMatchResultGameDif4(int guess, int difficulty, int[] secretNumber, int pointsGuesses, boolean result) {
+        int firstIndice;
+        int secondIndice;
+        int thirdIndice;
+
+        for (firstIndice = 0; firstIndice < guess; firstIndice++) {
+            System.out.println((firstIndice + 1) + "/" + guess + " tentativas");
+            System.out.print("Digite um número de um 1 à " + difficulty + ": ");
+            if (scanner.hasNextInt()) {
+                int guessedNumber = Integer.parseInt(scanner.nextLine());
+                if (guessedNumber == secretNumber[0]) {
+                    System.out.println("\nVocê Acertou!!");
+                    break;
+                } else {
+                    System.out.println("Tente Novamente\n");
+                    tipsMenu(guessedNumber, secretNumber[0], difficulty);
+                }
+                pointsGuesses++;
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+
+        for (secondIndice = firstIndice + 1; secondIndice < guess; secondIndice++) {
+            System.out.println((secondIndice + 1) + "/" + guess + " tentativas");
+            System.out.print("Digite um número de um 1 à " + difficulty + ": ");
+            if (scanner.hasNextInt()) {
+                int guessedNumber = Integer.parseInt(scanner.nextLine());
+
+                if (guessedNumber == secretNumber[1]) {
+                    System.out.println("\nVocê Acertou!!");
+                    break;
+                } else {
+                    System.out.println("Tente Novamente\n");
+                    tipsMenu(guessedNumber, secretNumber[1], difficulty);
+                }
+                pointsGuesses++;
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+
+        for (thirdIndice = secondIndice + 1; thirdIndice < guess; thirdIndice++) {
+            System.out.println((thirdIndice + 1) + "/" + guess + " tentativas");
+            System.out.print("Digite um número de um 1 à " + difficulty + ": ");
+            if (scanner.hasNextInt()) {
+                int guessedNumber = Integer.parseInt(scanner.nextLine());
+
+                if (guessedNumber == secretNumber[2]) {
+                    System.out.println("\nVocê Acertou!!");
+                    result = true;
+                    break;
+                } else {
+                    System.out.println("Tente Novamente\n");
+                    tipsMenu(guessedNumber, secretNumber[2], difficulty);
+                }
+                pointsGuesses++;
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
+            }
+        }
+
+        return new MatchResult(result, pointsGuesses);
+    }
+
+    public static void addingMatchToMatchList(int matchPoints, int dif) {
+        if (matchList.size() < 10) {
+            matchList.add(new MatchResultObj(matchPoints, dif));
+        } else {
+            matchList.remove(0);
+            matchList.add(new MatchResultObj(matchPoints, dif));
+        }
+    }
+
+    public static void addingBestMatchResults(int matchPoints, int dif) {
+        if (dif == 1 && bestResults[0] < matchPoints) {
+            bestResults[0] = matchPoints;
+        } else if (dif == 2 && bestResults[1] < matchPoints) {
+            bestResults[1] = matchPoints;
+        } else if (dif == 3 && bestResults[2] < matchPoints) {
+            bestResults[2] = matchPoints;
+        } else if (dif == 4 && bestResults[3] < matchPoints) {
+            bestResults[3] = matchPoints;
+        }
+    }
+
+    public static void rules() {
+        System.out.println("\n---------------------Regras--------------------");
+        System.out.println("Ao iniciar um novo jogo, o jogador pode escolher entre três níveis:");
+        System.out.println("Fácil: Adivinhar um número entre 1 e 50, com 10 tentativas");
+        System.out.println("Médio: Adivinhar um número entre 1 e 100, com 7 tentativas");
+        System.out.println("Difícil: Adivinhar um número entre 1 e 200, com 5 tentativas");
+        System.out.println("(Modo Secreto)DemiGod: Adivinhar 3 números entre 1 e 200, com 11 tentativas");
+        System.out.print("\n");
+        System.out.println("Pontuação base por nível:");
+        System.out.println("Fácil (100)");
+        System.out.println("Médio (200)");
+        System.out.println("Difícil (300)");
+        System.out.println("A cada tentativa usada, são descontados 10 pontos.");
+        System.out.println("Bônus por conclusão rápida: +50 pontos para cada tentativa não utilizada.");
+        System.out.print("\n");
+        System.out.println("Pontuação por uso de Dicas: ");
+        System.out.println("Dica de paridade (par/ímpar): -10 pontos");
+        System.out.println("Dica de intervalo (metade superior/inferior): -20 pontos");
+        System.out.println("Dica de proximidade (quente/frio): -15 pontos\n");
+    }
+
+    public static void resultList() {
+        System.out.println("\n10 partidas anteriores:");
+        for (MatchResultObj matchResult : matchList) {
+            matchResult.showMatchInf();
+        }
+        System.out.println("\nTotal de Pontos: " + totalPoints + "\n");
+    }
+
+    public static void bestMatches() {
+        System.out.println("\nMelhores partidas:");
+        System.out.print("Fácil: ");
+        System.out.println(bestResults[0] + " pontos");
+        System.out.print("Médio: ");
+        System.out.println(bestResults[1] + " pontos");
+        System.out.print("Difícil: ");
+        System.out.println(bestResults[2] + " pontos");
+        System.out.print("DemiGod: ");
+        System.out.println(bestResults[3] + " pontos\n");
+    }
+
+    public static void tipsMenu(int guessedNumber, int secretNumber, int difficulty) {
+        if (gameOptionTips.equals("s")) {
+            while(true) {
+                System.out.print("Quer uma dica? (Sim - S/Não - N): ");
+                String tipOption = scanner.nextLine().toLowerCase();
+
+                if (tipOption.equals("s")) {
+                    pointsUsedOnTips += tipSystem(secretNumber, difficulty, guessedNumber);
+                    break;
+                } else if (tipOption.equals("n")) {
+                    System.out.println("Então vai lá bomzão");
+                    break;
+                } else {
+                    System.out.println("Digite uma opção válida!!");
+                }
             }
         }
     }
 
-    public static int escolhaDeClasse() {
-        int classe = 0;
-        boolean isEscolhendo = true;
-        while (isEscolhendo) {
-            try {
-                System.out.println("\n----Menu de Classes----");
-                System.out.println("1. Guerreiro");
-                System.out.println("Vida - 120 pts / Ataque - 30 pts / Defesa - 40 pts");
-                System.out.println("\n2. Arqueiro");
-                System.out.println("Vida - 80 pts / Ataque - 50 pts / Defesa - 20 pts");
-                System.out.println("\n3. Mago");
-                System.out.println("50pts - Vida / 80pts Ataque / 20pts - Defesa");
-                System.out.print("Digite aqui sua Opção:");
-                int option = scanner.nextInt();
+    public static int tipSystem(int secretNumber, int difficulty, int guessedNumber) {
+        int pointsUsed = 0;
+        boolean continueVar = true;
+        while(continueVar) {
+            System.out.println("\n------------Dicas------------");
+            System.out.println("1. Pariedade (Par/Ímpar) / -10 pontos");
+            System.out.println("2. Intervalo (Metade Inferior/Superior) / -20 pontos");
+            System.out.println("3. Proximidade (Quente/Frio) / -15 pontos");
+            System.out.println("0. Sair");
+            System.out.print("Digite sua opção: ");
+            if (scanner.hasNextInt()) {
+                int tipOptions = Integer.parseInt(scanner.nextLine());
 
-                switch (option) {
+                switch (tipOptions) {
                     case 1 -> {
-                        classe = 1;
-                        isEscolhendo = false;
+                        pointsUsed += 10;
+                        if (secretNumber % 2 == 0) {
+                            System.out.println("\nO número é Par!");
+                        } else {
+                            System.out.println("\nO número é Ímpar!");
+                        }
                     }
                     case 2 -> {
-                        classe = 2;
-                        isEscolhendo = false;
+                        pointsUsed += 20;
+                        if (secretNumber > (difficulty/2)) {
+                            System.out.println("\nO número está na metade Superior!");
+                        } else {
+                            System.out.println("\nO número está na metade Inferior!");
+                        }
                     }
                     case 3 -> {
-                        classe = 3;
-                        isEscolhendo = false;
+                        pointsUsed += 15;
+                        if (Math.abs(secretNumber - guessedNumber) <= 10) {
+                            System.out.println("\nEstá quente!");
+                        } else {
+                            System.out.println("\nEstá frio...");
+                        }
                     }
-                    default -> System.out.println("\nDigite uma Opção Válida.\n");
+                    case 0 -> continueVar = false;
+                    default -> System.out.println("Escolha uma opção válida!!");
                 }
-
-            } catch (InputMismatchException e) {
-                System.out.println("\nEntrada Inválida, Tente novamente.\n");
-                scanner.nextLine();
+            } else {
+                System.out.println("\nDigite uma Entrada Válida!!\n");
+                scanner.next();
             }
-        }
-
-        return classe;
+        } return pointsUsed;
     }
 
-    public static void regrasDeJogo() {
-        System.out.println("\n----Regras de Jogo----");
-        System.out.println("O Jogador enfrenta inimigos aletórios em batalhas de turno");
-        System.out.println("A cada turno, escolhe entre atacar, defender ou usar item");
-        System.out.println("A partida só termina quando todos os inimigos forem derrotados ou o jogodor morrer");
+    public static void gameOptions() {
+        while(true) {
+            System.out.print("\nQuer dicas em seu jogo (Sim - S/Não - N): ");
+            gameOptionTips = scanner.nextLine().toLowerCase();
 
-        System.out.println("\n----Personagens----");
-        System.out.println("Guerreiro");
-        System.out.println("Fortaleza em carne e osso, o Guerreiro avança com bravura — suportando o impacto do inimigo enquanto revida com firmeza");
-        System.out.println("Atributos");
-        System.out.println("Vida - 120 pontos / Ataque - 30 pontos / Defesa - 40 pontos");
-
-        System.out.println("\nArqueiro");
-        System.out.println("Ágil e letal à distância, o Arqueiro troca armadura por precisão — cada flecha é um golpe certeiro rumo à vitória.");
-        System.out.println("Atributos");
-        System.out.println("Vida - 80 pontos / Ataque - 50 pontos / Defesa - 20 pontos");
-
-        System.out.println("\nMago");
-        System.out.println("Frágil no corpo, mas imbatível na mente — o Mago domina as forças arcanas para destruir antes mesmo de ser tocado.");
-        System.out.println("Atributos");
-        System.out.println("Vida - 50 pontos / Ataque - 80 pontos / Defesa - 20 pontos");
-
-        System.out.println("\nItens");
-        System.out.println("Poção de Cura");
-        System.out.println("Restaura 20 pontos de Vida (Máximo de 3 por Partida)");
+            if (gameOptionTips.equals("s") || gameOptionTips.equals("n")) {
+                System.out.println("Opções de Jogo Atualizadas.\n");
+                break;
+            } else {
+                System.out.println("Digite uma opção válida!!");
+            }
+        }
     }
 }
